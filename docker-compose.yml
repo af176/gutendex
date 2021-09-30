@@ -1,0 +1,47 @@
+version: "3"
+volumes:
+    postgresvol:
+services:
+    postgresdb:
+        image: postgres
+        environment: 
+            - "POSTGRES_USER=gutendex"
+            - "POSTGRES_PASSWORD=password"
+            - "POSTGRES_DB=gutendex"
+        ports:
+            - "5432:5432"
+        volumes:
+            - "postgresvol:/var/lib/postgresql/data"
+    app:
+        build: .
+        ports:
+            - "8000:8000"
+        environment: 
+            - "SECRET_KEY=Secret"
+            - "ALLOWED_HOSTS=localhost"
+            - "DATABASE_PASSWORD=password"
+            - "DATABASE_PORT=5432"
+            - "DATABASE_USER=gutendex"
+            - "DATABASE_NAME=gutendex"
+            - "DATABASE_HOST=postgresdb"
+            - "ADMIN_EMAILS=you@your.domain.here"
+            - "ADMIN_NAMES=You"
+            - "ALLOWED_HOSTS=127.0.0.1,localhost,app"
+            - "EMAIL_HOST=your.smtp.host.here"
+            - "EMAIL_HOST_ADDRESS=gutendex@your.domain.here"
+            - "EMAIL_HOST_PASSWORD=your-smtp-host-password"
+            - "EMAIL_HOST_USER=your-smtp-host-user-name"
+            - "MANAGER_EMAILS=someone@their.domain.here"
+            - "MANAGER_NAMES=Someone"
+            - "MEDIA_ROOT=/var/www/gutendex/media/"
+            - "STATIC_ROOT=/var/www/gutendex/static/"
+
+    nginx:
+        image: nginx
+        ports:
+            - "80:80"
+        volumes:
+            - ./nginx.conf/nginx.conf:/etc/nginx/conf.d/default.conf
+            - "./static:/usr/share/nginx/html/static"
+        depends_on: 
+            - "app"
